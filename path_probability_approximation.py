@@ -91,6 +91,8 @@ def approximate_path_by_probability(args, result_path, source_path, ktest_tool_p
         path_condition_with_error = path_condition_with_error.replace(">> 0", "")
         path_condition_with_error = path_condition_with_error.replace(">> ", "/2**")
         path_condition_with_error = path_condition_with_error.replace("<< ", "*2**")
+        # We use a default value of 1.0 for fresh variables introduced by loop breaking
+        path_condition_with_error = re.sub("_fresh_\\d+", path_condition_with_error, "1.0")
 
         # generate an input, for which the path condition is satisfied
         result = subprocess.run([ktest_tool_path, '--write-ints', result_path + "/" + "test" + "{:0>6}".format(str(p.path_id)) + '.ktest'], stdout=subprocess.PIPE)
@@ -150,6 +152,9 @@ def approximate_path_by_probability(args, result_path, source_path, ktest_tool_p
                                 # Check if path condition with error is satisfied
                                 if(eval(path_condition_with_error)):
                                     # If satisfied, get the output error from expression
+                                    # We use a default value of 1.0 for fresh
+                                    # variables introduced by loop breaking
+                                    exp = re.sub("_fresh_\\d+", exp, "1.0")
                                     output_error = eval(exp)
                                     result.append((input_error, output_error))
                                     input_approximability_count[idx] += 1
