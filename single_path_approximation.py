@@ -92,6 +92,8 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
         path_condition_with_error = path_condition_with_error.replace("<< ", "<< (int)")
         path_condition_with_error = path_condition_with_error.replace("true", "1");
         path_condition_with_error = path_condition_with_error.replace("false", "0");
+        # We use a default value of 1.0 for fresh variables introduced by loop breaking
+        path_condition_with_error = re.sub("_fresh_\\d+", path_condition_with_error, "1.0")
     if(not path_condition_without_error == ' '):
         path_condition_without_error = path_condition_without_error.replace(" = ", " == ")
         path_condition_without_error = path_condition_without_error.replace(">> 0", "")
@@ -99,6 +101,8 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
         path_condition_without_error = path_condition_without_error.replace("<< ", "<< (int)")
         path_condition_without_error = path_condition_without_error.replace("true", "1");
         path_condition_without_error = path_condition_without_error.replace("false", "0");
+        # We use a default value of 1.0 for fresh variables introduced by loop breaking
+        path_condition_without_error = re.sub("_fresh_\\d+", path_condition_without_error, "1.0")
 
     #build C function to check satisfiability of path conditions with and without error
     pc_without_error_func = "int without_error() {\n float scaling = 1.0;"
@@ -296,11 +300,13 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
                             else:
                                 input_approximability_count[idx] += 1
                                 try:
+                                    # We use a default value of 1.0 for fresh variables introduced by loop breaking
+                                    exp = re.sub("_fresh_\\d+", exp, "1.0")
                                     output_error = eval(exp, None, globals())
                                     result.append((input_error, output_error))
                                 except:
                                     print("Exception occured in eval (1)")
-                                    continue;
+                                    continue
                         else:
                             func_with_error = cinpy.defc("without_error", ctypes.CFUNCTYPE(ctypes.c_int), function_string)
                             if(func_with_error()):
@@ -311,6 +317,8 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
                                     output_error = 0
                                 else:
                                     try:
+                                        # We use a default value of 1.0 for fresh variables introduced by loop breaking
+                                        exp = re.sub("_fresh_\\d+", exp, "1.0")
                                         output_error = eval(exp, None, globals())
                                         result.append((input_error, output_error))
                                     except:
