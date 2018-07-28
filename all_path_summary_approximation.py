@@ -68,8 +68,13 @@ def approximate_for_all_paths_summary(result_path, source_path, ktest_tool_path)
         path_condition_with_error = re.sub("_fresh_\\d+", path_condition_with_error, "1.0")
 
         # generate an input, for which the path condition is satisfied
-        result = subprocess.run([ktest_tool_path, '--write-ints', result_path + "/" + "test" + "{:0>6}".format(str(p.path_id)) + '.ktest'], stdout=subprocess.PIPE)
-        output_string = result.stdout.decode('utf-8')
+        command_to_execute = [ktest_tool_path, '--write-ints', result_path + "/" + "test" + "{:0>6}".format(str(p.path_id)) + '.ktest']
+        if sys.version_info < (3,5):
+            result = subprocess.check_output(command_to_execute)
+            output_string = result.decode('utf-8')
+        else:
+            result = subprocess.run(command_to_execute, stdout=subprocess.PIPE)
+            output_string = result.stdout.decode('utf-8')
         tokens = re.split(r'\n|:', output_string)
         idx = 5
         num_args = int(tokens[idx].strip())
