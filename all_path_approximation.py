@@ -193,18 +193,30 @@ def approximate_for_all_paths(result_path, source_path, ktest_tool_path):
         print("================================\npath #%d" % p.path_id)
         print("probability: %e" % (p.path_prob * 100 / probability_sum))
         print("\nApproximable variables\n==========")
+        approximable_input_to_print = []
         for var in approximable_input:
-            print(var.strip(",") + " (input)")
+            approximable_input_to_print.append(var.strip(",") + " (input)")
         for var in p.approximable_var:
-            print(var.strip(","))
+            approximable_input_to_print.append(var.strip(","))
+
+        for line in sorted(approximable_input_to_print):
+            print(line)
 
         print("\nNon-approximable variables\n==========")
+        non_approximable_input_to_print = []
         for var in non_approximable_input:
-            print(var.strip(",") + " (input)")
-
+            non_approximable_input_to_print.append(var.strip(",") + " (input)")
         for var in p.non_approximable_var:
-            print(var.strip(","))
+            non_approximable_input_to_print.append(var.strip(","))
+
+        for line in sorted(non_approximable_input_to_print):
+            print(line)
 
         print("\nApproximability of input variables\n==========")
+        approximability_to_print = []
         for idx, var in enumerate(approximable_input):
-            print(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
+            approximability_to_print.append(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
+
+        for line in sorted(approximability_to_print):
+            print(line)
+

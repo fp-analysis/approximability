@@ -56,6 +56,7 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
     print("Input variables\n================================")
     source = open(source_path, "r")
     input_variables = []
+    input_variables_to_print = []
     for line in source:
         if re.match("(.*)klee_make_symbolic(.*)", line):
             tokens = re.split(r'[(|)]|\"', line)
@@ -66,8 +67,11 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
                 input_variables.append((tokens[2], tokens[4], 1, tokens[3]))
             else:
                 input_variables.append((tokens[2], tokens[4], 0, ''))
-            print(tokens[4])
+            input_variables_to_print.append(tokens[4])
     source.close()
+
+    for line in sorted(input_variables_to_print):
+        print(line)
 
     print("\nInput with error\n================================")
     source = open(source_path, "r")
@@ -79,6 +83,9 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
             approximable_input.append(name)
             print(name)
     source.close()
+
+    for line in sorted(approximable_input):
+        print(line)
 
     # Get the path condition with error for the selected path
     source = open(result_path + "/" + "test" + "{:0>6}".format(str(selected_path_id)) + ".kquery_precision_error", "r")
@@ -127,6 +134,7 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
     tokens = re.split(r'\n|:', output_string)
     idx = 5
     num_args = int(tokens[idx].strip())
+    args_to_print = []
     for args in range(num_args):
         temp = tokens[idx + 3].strip().replace("'", "")
         if('arr' in temp):
@@ -135,9 +143,12 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
             exec("%s = %f" % (tokens[idx + 3].strip().replace("'", ""), float(tokens[idx + 9].strip())), None, globals())
             #if the inputs are zero, then the expressions will not work because they use relative error
             if(not float(tokens[idx + 9].strip()) == 0.0):
-                print("%s = %f" % (tokens[idx + 3].strip().replace("'", ""), float(tokens[idx + 9].strip())))
+                args_to_print.append("%s = %f" % (tokens[idx + 3].strip().replace("'", ""), float(tokens[idx + 9].strip())))
             pc_without_error_func_definitions += tokens[idx + 3].strip().replace("'", "") + " = " + str(tokens[idx + 9].strip()) + ";"
         idx += 9
+
+    for line in sorted(args_to_print):
+        print(line)
 
     #load pre-defined input in file (used mainly for floating point constants)
     largest_index = dict()
@@ -154,6 +165,7 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
 
         defined_variables = []
         c_defined_variables = []
+        defined_variables_to_print = []
         for line in input_file:
             tokens = line.split('=')
             variable_name = tokens[0].split('[')[0].strip()
@@ -168,7 +180,7 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
             else:
                 variable_name = tokens[0].strip()
                 exec("%s = %f" % (tokens[0].strip(), float(tokens[1].strip())), None, globals())
-                print("%s = %f" % (tokens[0].strip(), float(tokens[1].strip())))
+                defined_variables_to_print.append("%s = %f" % (tokens[0].strip(), float(tokens[1].strip())))
                 if variable_name in c_defined_variables:
                     pc_without_error_func_definitions += tokens[0].strip() + " = " + tokens[1].strip() + ";"
                 else:
@@ -177,6 +189,9 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
                     pc_without_error_func_definitions += tokens[0].strip() + " = " + tokens[1].strip() + ";"
                     c_defined_variables.append(variable_name)
         input_file.close()
+
+        for line in sorted(defined_variables_to_print):
+            print(line)
 
     for variable_name, num_elements in pc_without_error_func_declarations.items():
         if variable_name in largest_index:
@@ -392,18 +407,31 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
 
     # Print out the approximable and non-approximable variables
     print("\nApproximable variables (in increasing order of sensitivity)\n================================")
+    approximable_input_to_print = []
     for var in approximable_input:
-        print(var.strip(",") + " (input)")
+        approximable_input_to_print.append(var.strip(",") + " (input)")
     for var in approximable_output_strings:
-        print(var)
+        approximable_input_to_print.append(var)
+
+    for line in sorted(approximable_input_to_print):
+        print(line)
 
     print("\nNon-approximable variables (in increasing order of sensitivity)\n================================")
+    approximable_input_to_print = []
     for var in non_approximable_input:
-        print(var.strip(",") + " (input)")
+        approximable_input_to_print.append(var.strip(",") + " (input)")
     for var in non_approximable_output_strings:
-        print(var)
+        approximable_input_to_print.append(var)
+
+    for line in sorted(approximable_input_to_print):
+        print(line)
 
     # Print the approximability of inputs
     print("\nApproximability of input variables\n================================")
+    approximability_to_print = []
     for idx, var in enumerate(approximable_input):
-        print(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
+        approximability_to_print.append(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
+
+    for line in sorted(approximability_to_print):
+        print(line)
+

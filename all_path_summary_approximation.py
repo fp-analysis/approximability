@@ -201,13 +201,21 @@ def approximate_for_all_paths_summary(result_path, source_path, ktest_tool_path)
     print("Output: " + result_path)
     print("\nApproximability of program variables\n================================")
     print("var_name\tpathscore\tprobability score")
+    approximability_result_to_print = []
     for result in approximability_result:
-        print("%s\t\t%.2f\t\t%e" % (result[0], result[1], result[2]))
+        approximability_result_to_print.append("%s\t\t%.2f\t\t%e" % (result[0], result[1], result[2]))
+
+    for line in sorted(approximability_result_to_print):
+        print(line)
 
     # for p in paths:
     #   print("%d %.2f" %(p.path_id,(p.path_prob * 100 / probability_sum)))
 
     print("\nApproximability of input variables\n================================")
+    approximable_input_to_print = []
     for idx, var in enumerate(approximable_input):
-        print(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
-        
+        approximable_input_to_print.append(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
+    
+    for line in sorted(approximable_input_to_print):
+        print(line)
+
