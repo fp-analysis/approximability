@@ -406,25 +406,33 @@ def approximate_for_single_path(result_path, source_path, input_path, ktest_tool
     non_approximable_output_strings = list(set(non_approximable_output_strings))
 
     # Print out the approximable and non-approximable variables
-    print("\nApproximable variables (in increasing order of sensitivity)\n================================")
     approximable_input_to_print = []
     for var in approximable_input:
         approximable_input_to_print.append(var.strip(",") + " (input)")
     for var in approximable_output_strings:
         approximable_input_to_print.append(var)
 
-    for line in sorted(approximable_input_to_print):
+    print("\nApproximable variables (in increasing order of sensitivity)\n================================")
+    for line in approximable_input_to_print:
         print(line)
+
+    with open(input_path + "/approximable_sorted.txt", "w") as output_file:
+        for line in sorted(approximable_input_to_print):
+            output_file.write(line + "\n")
+
+    non_approximable_input_to_print = []
+    for var in non_approximable_input:
+        non_approximable_input_to_print.append(var.strip(",") + " (input)")
+    for var in non_approximable_output_strings:
+        non_approximable_input_to_print.append(var)
 
     print("\nNon-approximable variables (in increasing order of sensitivity)\n================================")
-    approximable_input_to_print = []
-    for var in non_approximable_input:
-        approximable_input_to_print.append(var.strip(",") + " (input)")
-    for var in non_approximable_output_strings:
-        approximable_input_to_print.append(var)
-
-    for line in sorted(approximable_input_to_print):
+    for line in non_approximable_input_to_print:
         print(line)
+
+    with open(input_path + "/non_approximable_sorted.txt", "w") as output_file:
+        for line in sorted(non_approximable_input_to_print):
+            output_file.write(line + "\n")
 
     # Print the approximability of inputs
     print("\nApproximability of input variables\n================================")
