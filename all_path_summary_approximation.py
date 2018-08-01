@@ -64,10 +64,17 @@ def approximate_for_all_paths_summary(result_path, source_path, ktest_tool_path)
         path_condition_with_error = path_condition_with_error.replace(">> 0", "")
         path_condition_with_error = path_condition_with_error.replace(">> ", "/2**")
         path_condition_with_error = path_condition_with_error.replace("<< ", "*2**")
+        # We use a default value of 1.0 for fresh variables introduced by loop breaking
+        path_condition_with_error = re.sub("_fresh_\\d+", path_condition_with_error, "1.0")
 
         # generate an input, for which the path condition is satisfied
-        result = subprocess.run([ktest_tool_path, '--write-ints', result_path + "/" + "test" + "{:0>6}".format(str(p.path_id)) + '.ktest'], stdout=subprocess.PIPE)
-        output_string = result.stdout.decode('utf-8')
+        command_to_execute = [ktest_tool_path, '--write-ints', result_path + "/" + "test" + "{:0>6}".format(str(p.path_id)) + '.ktest']
+        if sys.version_info < (3,5):
+            result = subprocess.check_output(command_to_execute)
+            output_string = result.decode('utf-8')
+        else:
+            result = subprocess.run(command_to_execute, stdout=subprocess.PIPE)
+            output_string = result.stdout.decode('utf-8')
         tokens = re.split(r'\n|:', output_string)
         idx = 5
         num_args = int(tokens[idx].strip())
@@ -125,6 +132,9 @@ def approximate_for_all_paths_summary(result_path, source_path, ktest_tool_path)
                                 # Check if path condition with error is satisfied
                                 if(eval(path_condition_with_error)):
                                     # If satisfied, get the output error from expression
+                                    # We use a default value of 1.0 for fresh
+                                    # variables introduced by loop breaking
+                                    exp = re.sub("_fresh_\\d+", exp, "1.0")
                                     output_error = eval(exp)
                                     result.append((input_error, output_error))
                                     input_approximability_count[idx] += 1
@@ -191,13 +201,21 @@ def approximate_for_all_paths_summary(result_path, source_path, ktest_tool_path)
     print("Output: " + result_path)
     print("\nApproximability of program variables\n================================")
     print("var_name\tpathscore\tprobability score")
+    approximability_result_to_print = []
     for result in approximability_result:
-        print("%s\t\t%.2f\t\t%e" % (result[0], result[1], result[2]))
+        approximability_result_to_print.append("%s\t\t%.2f\t\t%e" % (result[0], result[1], result[2]))
+
+    for line in sorted(approximability_result_to_print):
+        print(line)
 
     # for p in paths:
     #   print("%d %.2f" %(p.path_id,(p.path_prob * 100 / probability_sum)))
 
     print("\nApproximability of input variables\n================================")
+    approximable_input_to_print = []
     for idx, var in enumerate(approximable_input):
-        print(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
-        
+        approximable_input_to_print.append(var + ' : %d%%' % ((input_approximability_count[idx] / (expression_count * input_error_repeat)) * 100))
+    
+    for line in sorted(approximable_input_to_print):
+        print(line)
+
